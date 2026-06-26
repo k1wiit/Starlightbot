@@ -20,10 +20,20 @@ class SlashCommandManager(private val plugin: StarlightBot, private val jda: JDA
     private val publicCommands = PublicCommands(plugin)
 
     fun registerCommands() {
-        val guild = jda.getGuildById(plugin.configManager.guildId) ?: run {
-            plugin.logger.warning("[StarlightBot] Guild not found! Check guild_id in config.")
+        val guildId = plugin.configManager.guildId.trim()
+        if (guildId.isBlank() || guildId == "YOUR_GUILD_ID") {
+            plugin.logger.warning("[StarlightBot] Guild ID is not configured. Slash commands will not be deployed.")
+            plugin.consoleLog("<red>[StarlightBot] Guild ID is not configured. Slash commands will not be deployed.")
             return
         }
+
+        val guild = jda.getGuildById(guildId) ?: run {
+            plugin.logger.warning("[StarlightBot] Guild not found for slash command deployment. Check guild_id in config.")
+            plugin.consoleLog("<red>[StarlightBot] Guild not found for slash command deployment. Check guild_id in config.")
+            return
+        }
+
+        plugin.consoleLog("<gray>[StarlightBot] Deploying Discord slash commands to <white>${guild.name}<gray>...")
 
         val commands = listOf(
             // Public
@@ -69,12 +79,19 @@ class SlashCommandManager(private val plugin: StarlightBot, private val jda: JDA
         guild.updateCommands()
             .addCommands(commands)
             .queue(
-                { plugin.consoleLog("<gray>[StarlightBot] Slash commands registered (${commands.size} commands).") },
-                { err -> plugin.logger.warning("[StarlightBot] Failed to register commands: ${err.message}") }
+                {
+                    plugin.consoleLog("<green>[StarlightBot] Slash commands deployed successfully (${commands.size} commands).")
+                    plugin.logger.info("[StarlightBot] Slash commands deployed successfully (${commands.size} commands).")
+                },
+                { err ->
+                    plugin.logger.warning("[StarlightBot] Failed to register commands: ${err.message}")
+                    plugin.consoleLog("<red>[StarlightBot] Failed to register commands: ${err.message}")
+                }
             )
 
         // Register this as a listener for command events
         jda.addEventListener(this)
+        plugin.consoleLog("<gray>[StarlightBot] Slash command listener registered.")
     }
 
     override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {

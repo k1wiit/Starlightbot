@@ -67,6 +67,8 @@ logging:
     - "Ignoring packet"
     - "moved too quickly"
     - "Can't keep up"
+    - "Thread RCON Client"
+    - "RCON Client"
 
 # Player Count Voice Channel
 player_count:

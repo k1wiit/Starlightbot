@@ -36,7 +36,13 @@ class DiscordBotService(private val plugin: StarlightBot) {
                     GatewayIntent.GUILD_MESSAGE_REACTIONS
                 )
                 .setMemberCachePolicy(MemberCachePolicy.ALL)
-                .disableCache(CacheFlag.VOICE_STATE, CacheFlag.EMOJI, CacheFlag.STICKER, CacheFlag.SCHEDULED_EVENTS)
+                .disableCache(
+                    CacheFlag.VOICE_STATE,
+                    CacheFlag.EMOJI,
+                    CacheFlag.STICKER,
+                    CacheFlag.SCHEDULED_EVENTS,
+                    CacheFlag.FORUM_TAGS
+                )
                 .addEventListeners(
                     ReadyListener(),
                     WhitelistMessageListener(plugin),

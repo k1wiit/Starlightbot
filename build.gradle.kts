@@ -17,10 +17,11 @@ dependencies {
 
     implementation(kotlin("stdlib"))
 
-    implementation("net.dv8tion:JDA:5.2.2") {
+    implementation("net.dv8tion:JDA:5.5.1") {
         exclude(module = "opus-java")
     }
 
+    implementation("org.slf4j:slf4j-simple:2.0.16")
     implementation("org.xerial:sqlite-jdbc:3.47.1.0")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("org.json:json:20240303")
@@ -46,17 +47,6 @@ tasks {
     shadowJar {
         archiveClassifier.set("")
         archiveFileName.set("StarlightBot-${project.version}.jar")
-
-        relocate("net.dv8tion.jda", "com.k1wit.starlightbot.libs.jda")
-        relocate("okhttp3", "com.k1wit.starlightbot.libs.okhttp3")
-        relocate("okio", "com.k1wit.starlightbot.libs.okio")
-        relocate("org.sqlite", "com.k1wit.starlightbot.libs.sqlite")
-        relocate("org.slf4j", "com.k1wit.starlightbot.libs.slf4j")
-        relocate("com.neovisionaries", "com.k1wit.starlightbot.libs.neovisionaries")
-        relocate("gnu.trove", "com.k1wit.starlightbot.libs.trove")
-        relocate("com.fasterxml.jackson", "com.k1wit.starlightbot.libs.jackson")
-        relocate("kotlinx.coroutines", "com.k1wit.starlightbot.libs.coroutines")
-        relocate("org.json", "com.k1wit.starlightbot.libs.json")
 
         mergeServiceFiles()
 

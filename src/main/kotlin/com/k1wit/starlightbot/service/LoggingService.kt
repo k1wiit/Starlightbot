@@ -151,7 +151,8 @@ class LoggingService(private val plugin: StarlightBot) {
 
             // Filter patterns from config
             val filterPatterns = try { plugin.configManager.loggingFilterPatterns } catch (_: Exception) { emptyList() }
-            if (filterPatterns.any { pattern -> rawMessage.contains(pattern, ignoreCase = true) }) return
+            val defaultFilterPatterns = listOf("Thread RCON Client", "RCON Client")
+            if ((filterPatterns + defaultFilterPatterns).any { pattern -> rawMessage.contains(pattern, ignoreCase = true) }) return
 
             val level = when (event.level) {
                 Level.ERROR, Level.FATAL -> ANSIFormatter.LogLevel.ERROR
