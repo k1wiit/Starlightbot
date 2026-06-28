@@ -6,11 +6,14 @@ bot:
 # Channel IDs
 channels:
   log: "CHANNEL_ID"
+  ticket_log: "CHANNEL_ID"
+  deleted_message_log: "CHANNEL_ID"
   whitelist: "CHANNEL_ID"
   info: "CHANNEL_ID"
   tickets: "CHANNEL_ID"
   script: "CHANNEL_ID"
   player_count_voice: "VOICE_CHANNEL_ID"
+  join_to_create_voice: "CHANNEL_ID"
 
 # Roles
 roles:

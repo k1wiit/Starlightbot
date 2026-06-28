@@ -48,7 +48,9 @@ class DiscordBotService(private val plugin: StarlightBot) {
                     WhitelistMessageListener(plugin),
                     ButtonInteractionListener(plugin),
                     SelectMenuListener(plugin),
-                    AntiSpamListener(plugin)
+                    AntiSpamListener(plugin),
+                    VoiceChannelListener(plugin),
+                    MessageDeleteListener(plugin)
                 )
                 .build()
 

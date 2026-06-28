@@ -16,6 +16,12 @@ class PlayerJoinLeaveListener(private val plugin: StarlightBot) : Listener {
         val onlineCount = plugin.server.onlinePlayers.size
         val maxPlayers = plugin.server.maxPlayers
 
+        // Track Minecraft playtime for level system
+        val whitelistEntry = plugin.whitelistService.repository.findByMinecraftName(playerName)
+        if (whitelistEntry != null) {
+            plugin.levelService.onMinecraftPlayerJoin(whitelistEntry.discordUserId)
+        }
+
         plugin.server.scheduler.runTaskAsynchronously(plugin, Runnable {
             sendLogEmbed(EmbedFactory.playerJoin(playerName, onlineCount, maxPlayers))
         })
@@ -27,6 +33,12 @@ class PlayerJoinLeaveListener(private val plugin: StarlightBot) : Listener {
         // Count after they leave
         val onlineCount = plugin.server.onlinePlayers.size - 1
         val maxPlayers = plugin.server.maxPlayers
+
+        // Award Minecraft playtime experience
+        val whitelistEntry = plugin.whitelistService.repository.findByMinecraftName(playerName)
+        if (whitelistEntry != null) {
+            plugin.levelService.onMinecraftPlayerLeave(whitelistEntry.discordUserId)
+        }
 
         plugin.server.scheduler.runTaskAsynchronously(plugin, Runnable {
             sendLogEmbed(EmbedFactory.playerLeave(playerName, onlineCount.coerceAtLeast(0), maxPlayers))

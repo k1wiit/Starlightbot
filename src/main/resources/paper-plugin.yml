@@ -4,3 +4,26 @@ main: com.k1wit.starlightbot.StarlightBot
 api-version: "1.21"
 author: K1wit
 description: "Discord Bot integration for Starlight Minecraft Server"
+
+commands:
+  sit:
+    description: "Sit down on an invisible armor stand"
+    usage: "/sit"
+  playerhead:
+    description: "Get a player's head"
+    usage: "/playerhead <player>"
+  home:
+    description: "Manage your homes"
+    usage: "/home [home name]"
+  sethome:
+    description: "Set a home"
+    usage: "/sethome [home name]"
+  delhome:
+    description: "Delete a home"
+    usage: "/delhome [home name]"
+  setpublichome:
+    description: "Set a public home"
+    usage: "/setpublichome [home name]"
+  delpublichome:
+    description: "Delete a public home"
+    usage: "/delpublichome [home name]"

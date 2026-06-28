@@ -18,6 +18,7 @@ class SlashCommandManager(private val plugin: StarlightBot, private val jda: JDA
     private val setupCommand = SetupCommand(plugin)
     private val reloadConfigCommand = ReloadConfigCommand(plugin)
     private val publicCommands = PublicCommands(plugin)
+    private val voiceChannelCommand = VoiceChannelCommand(plugin)
 
     fun registerCommands() {
         val guildId = plugin.configManager.guildId.trim()
@@ -73,7 +74,9 @@ class SlashCommandManager(private val plugin: StarlightBot, private val jda: JDA
                     SubcommandData("ticket-panel", "Create the ticket panel in this channel")
                 ),
 
-            Commands.slash("reloadconfig", "Reload the plugin configuration")
+            Commands.slash("reloadconfig", "Reload the plugin configuration"),
+
+            voiceChannelCommand.getCommandData()
         )
 
         guild.updateCommands()
@@ -107,6 +110,7 @@ class SlashCommandManager(private val plugin: StarlightBot, private val jda: JDA
             "wl"             -> whitelistCommands.handleAdmin(event)
             "setup"          -> setupCommand.handle(event)
             "reloadconfig"   -> reloadConfigCommand.handle(event)
+            "voicecreate"    -> voiceChannelCommand.handle(event)
         }
     }
 }

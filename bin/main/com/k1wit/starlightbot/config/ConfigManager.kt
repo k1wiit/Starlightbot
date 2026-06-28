@@ -26,6 +26,8 @@ class ConfigManager(private val plugin: StarlightBot) {
 
     // Channels
     val logChannelId: String get() = config.getString("channels.log", "")!!
+    val ticketLogChannelId: String get() = config.getString("channels.ticket_log", "")!!
+    val deletedMessageLogChannelId: String get() = config.getString("channels.deleted_message_log", "")!!
     val whitelistChannelId: String get() = config.getString("channels.whitelist", "")!!
     val infoChannelId: String get() = config.getString("channels.info", "")!!
     val ticketsChannelId: String get() = config.getString("channels.tickets", "")!!

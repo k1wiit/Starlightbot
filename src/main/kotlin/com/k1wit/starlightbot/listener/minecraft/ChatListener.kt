@@ -22,6 +22,12 @@ class ChatListener(private val plugin: StarlightBot) : Listener {
             val channel = jda.getTextChannelById(channelId) ?: return
             // Send as plain message (not embed) to keep chat log clean
             channel.sendMessage("**$playerName**: $message").queue()
+
+            // Award level experience for chat
+            val whitelistEntry = plugin.whitelistService.repository.findByMinecraftName(playerName)
+            if (whitelistEntry != null) {
+                plugin.levelService.awardChatExp(whitelistEntry.discordUserId)
+            }
         } catch (e: Exception) {
             plugin.logger.fine("[StarlightBot] Chat log error: ${e.message}")
         }

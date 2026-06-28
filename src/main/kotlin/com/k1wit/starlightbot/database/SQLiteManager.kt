@@ -65,6 +65,39 @@ class SQLiteManager(private val plugin: StarlightBot) {
 
     fun getConnection(): Connection? = connection
 
+    fun execute(sql: String, vararg params: Any?) {
+        val conn = connection ?: return
+        try {
+            conn.prepareStatement(sql).use { stmt ->
+                params.forEachIndexed { index, param ->
+                    stmt.setObject(index + 1, param)
+                }
+                stmt.executeUpdate()
+            }
+        } catch (e: Exception) {
+            plugin.logger.severe("[StarlightBot] SQLite execute error: ${e.message}")
+            e.printStackTrace()
+        }
+    }
+
+    fun <T> query(sql: String, vararg params: Any?, mapper: (java.sql.ResultSet) -> T): T? {
+        val conn = connection ?: return null
+        return try {
+            conn.prepareStatement(sql).use { stmt ->
+                params.forEachIndexed { index, param ->
+                    stmt.setObject(index + 1, param)
+                }
+                stmt.executeQuery().use { rs ->
+                    mapper(rs)
+                }
+            }
+        } catch (e: Exception) {
+            plugin.logger.severe("[StarlightBot] SQLite query error: ${e.message}")
+            e.printStackTrace()
+            null
+        }
+    }
+
     fun close() {
         try {
             connection?.close()

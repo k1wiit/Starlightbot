@@ -22,6 +22,8 @@ class LoggingService(private val plugin: StarlightBot) {
     private var lastStacktrace: String? = null
     private var executor: ScheduledExecutorService? = null
     private var appender: StarLightAppender? = null
+    private var lastLogMessageId: String? = null
+    private var lastLogContent = StringBuilder()
 
     fun start() {
         // Register Log4J appender
@@ -107,27 +109,50 @@ class LoggingService(private val plugin: StarlightBot) {
         try {
             val channel = jda.getTextChannelById(channelId) ?: return
 
-            // Split into chunks of max 1900 chars (leaving room for code block syntax)
-            val chunks = mutableListOf<String>()
-            val current = StringBuilder()
-
+            // Add new lines to content
             for (line in lines) {
-                val addition = if (current.isEmpty()) line else "\n$line"
-                if (current.length + addition.length > 1850) {
-                    chunks.add(current.toString())
-                    current.clear()
-                    current.append(line)
+                if (lastLogContent.length + line.length + 1 > 1850) {
+                    // Current message is full, send it and start a new one
+                    if (lastLogMessageId != null) {
+                        val message = channel.retrieveMessageById(lastLogMessageId!!).complete()
+                        message.editMessage(ANSIFormatter.wrapInCodeblock(lastLogContent.toString())).queue(null) { err ->
+                            plugin.logger.warning("[StarlightBot] Failed to edit log: ${err.message}")
+                        }
+                    } else {
+                        channel.sendMessage(ANSIFormatter.wrapInCodeblock(lastLogContent.toString()))
+                            .queue({ msg -> lastLogMessageId = msg.id }, { err ->
+                                plugin.logger.warning("[StarlightBot] Failed to send log: ${err.message}")
+                            })
+                    }
+                    lastLogContent.clear()
+                    lastLogContent.append(line)
                 } else {
-                    current.append(addition)
+                    if (lastLogContent.isNotEmpty()) lastLogContent.append("\n")
+                    lastLogContent.append(line)
                 }
             }
-            if (current.isNotEmpty()) chunks.add(current.toString())
 
-            for (chunk in chunks) {
-                channel.sendMessage(ANSIFormatter.wrapInCodeblock(chunk))
-                    .queue(null) { err ->
-                        plugin.logger.warning("[StarlightBot] Failed to send log: ${err.message}")
+            // Send/edit the remaining content if we have any
+            if (lastLogContent.isNotEmpty()) {
+                if (lastLogMessageId != null) {
+                    try {
+                        val message = channel.retrieveMessageById(lastLogMessageId!!).complete()
+                        message.editMessage(ANSIFormatter.wrapInCodeblock(lastLogContent.toString())).queue(null) { err ->
+                            plugin.logger.warning("[StarlightBot] Failed to edit log: ${err.message}")
+                        }
+                    } catch (e: Exception) {
+                        // Message might have been deleted, post a new one
+                        channel.sendMessage(ANSIFormatter.wrapInCodeblock(lastLogContent.toString()))
+                            .queue({ msg -> lastLogMessageId = msg.id }, { err ->
+                                plugin.logger.warning("[StarlightBot] Failed to send log: ${err.message}")
+                            })
                     }
+                } else {
+                    channel.sendMessage(ANSIFormatter.wrapInCodeblock(lastLogContent.toString()))
+                        .queue({ msg -> lastLogMessageId = msg.id }, { err ->
+                            plugin.logger.warning("[StarlightBot] Failed to send log: ${err.message}")
+                        })
+                }
             }
         } catch (e: Exception) {
             // Silent - don't cause infinite loop

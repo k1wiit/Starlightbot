@@ -132,16 +132,34 @@ class TicketService(private val plugin: StarlightBot) {
             // Update DB
             repository.close(ticketId)
 
-            // Send transcript to log channel
-            val logChannelId = plugin.configManager.logChannelId
-            val logChannel = jda.getTextChannelById(logChannelId)
-            val transcriptBytes = sb.toString().toByteArray()
+            val transcriptBytes = sb.toString().toByteArray(Charsets.UTF_8)
 
-            logChannel?.sendMessageEmbeds(
-                EmbedFactory.ticketClosed(ticket.ticketNumber, ticket.category, closedByUserId)
-            )?.addFiles(
-                FileUpload.fromData(transcriptBytes, "ticket-${ticket.ticketNumber}-transcript.txt")
-            )?.queue()
+            // Send transcript to ticket log channel
+            val ticketLogChannelId = plugin.configManager.ticketLogChannelId
+            val ticketLogChannel = if (ticketLogChannelId.isNotBlank()) {
+                jda.getTextChannelById(ticketLogChannelId)
+            } else {
+                null
+            }
+
+            val embed = EmbedFactory.ticketClosed(ticket.ticketNumber, ticket.category, closedByUserId)
+            if (ticketLogChannel != null) {
+                ticketLogChannel.sendMessageEmbeds(embed)
+                    .addFiles(FileUpload.fromData(transcriptBytes, "ticket-${ticket.ticketNumber}-transcript.txt"))
+                    .queue()
+            }
+
+            // Also send to log channel as backup
+            val logChannelId = plugin.configManager.logChannelId
+            val logChannel = if (logChannelId.isNotBlank()) {
+                jda.getTextChannelById(logChannelId)
+            } else {
+                null
+            }
+
+            logChannel?.sendMessageEmbeds(embed)
+                ?.addFiles(FileUpload.fromData(transcriptBytes, "ticket-${ticket.ticketNumber}-transcript.txt"))
+                ?.queue()
 
             // Archive & lock thread
             thread.manager
@@ -159,10 +177,21 @@ class TicketService(private val plugin: StarlightBot) {
 
     private fun sendTicketLog(embed: net.dv8tion.jda.api.entities.MessageEmbed) {
         val jda = plugin.discordBotService.jda ?: return
-        val channelId = plugin.configManager.logChannelId
-        if (channelId.isBlank()) return
-        try {
-            jda.getTextChannelById(channelId)?.sendMessageEmbeds(embed)?.queue()
-        } catch (_: Exception) {}
+        
+        // Send to ticket log channel if configured
+        val ticketLogChannelId = plugin.configManager.ticketLogChannelId
+        if (ticketLogChannelId.isNotBlank()) {
+            try {
+                jda.getTextChannelById(ticketLogChannelId)?.sendMessageEmbeds(embed)?.queue()
+            } catch (_: Exception) {}
+        } else {
+            // Fall back to log channel
+            val logChannelId = plugin.configManager.logChannelId
+            if (logChannelId.isNotBlank()) {
+                try {
+                    jda.getTextChannelById(logChannelId)?.sendMessageEmbeds(embed)?.queue()
+                } catch (_: Exception) {}
+            }
+        }
     }
 }

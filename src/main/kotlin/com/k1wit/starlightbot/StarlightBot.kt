@@ -33,6 +33,10 @@ class StarlightBot : JavaPlugin() {
         private set
     lateinit var scriptService: ScriptService
         private set
+    lateinit var levelService: LevelService
+        private set
+    lateinit var homeService: HomeService
+        private set
 
     private val mm = MiniMessage.miniMessage()
 
@@ -54,6 +58,8 @@ class StarlightBot : JavaPlugin() {
         ticketService = TicketService(this)
         scriptService = ScriptService(this)
         antiSpamService = AntiSpamService(this)
+        levelService = LevelService(this)
+        homeService = HomeService(this)
 
         // 4. Start Discord bot ASYNCHRONOUSLY
         discordBotService = DiscordBotService(this)
@@ -68,6 +74,9 @@ class StarlightBot : JavaPlugin() {
 
         // 5. Register Minecraft listeners
         registerMinecraftListeners()
+
+        // 5.5 Register Minecraft commands
+        registerMinecraftCommands()
 
         // 6. Start logging service (console appender)
         loggingService = LoggingService(this)
@@ -111,6 +120,29 @@ class StarlightBot : JavaPlugin() {
         pm.registerEvents(ChatListener(this), this)
         pm.registerEvents(DeathListener(this), this)
         pm.registerEvents(AdvancementListener(this), this)
+    }
+
+    private fun registerMinecraftCommands() {
+        // Register /sit command
+        getCommand("sit")?.setExecutor(com.k1wit.starlightbot.commands.minecraft.SitCommand(this))
+        
+        // Register /playerhead command
+        getCommand("playerhead")?.apply {
+            val cmd = com.k1wit.starlightbot.commands.minecraft.PlayerHeadCommand(this@StarlightBot)
+            setExecutor(cmd)
+            tabCompleter = cmd
+        }
+        
+        // Register /home commands
+        val homeCmd = com.k1wit.starlightbot.commands.minecraft.HomeCommand(this)
+        getCommand("home")?.apply {
+            setExecutor(homeCmd)
+            tabCompleter = homeCmd
+        }
+        getCommand("sethome")?.setExecutor(homeCmd)
+        getCommand("delhome")?.setExecutor(homeCmd)
+        getCommand("setpublichome")?.setExecutor(homeCmd)
+        getCommand("delpublichome")?.setExecutor(homeCmd)
     }
 
     fun consoleLog(message: String) {

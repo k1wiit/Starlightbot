@@ -1,6 +1,0 @@
-name: StarlightBot
-version: "1.0.0"
-main: com.k1wit.starlightbot.StarlightBot
-api-version: "1.21"
-author: K1wit
-description: "Discord Bot integration for Starlight Minecraft Server"
